@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AI Job Portal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html" class="btn btn-outline">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Register Section -->
+    <section class="hero">
+        <div class="container">
+            <div style="max-width: 500px; margin: 0 auto;">
+                <div class="card-glass card">
+                    <h2 class="text-center text-gradient">Create Account</h2>
+                    <p class="text-center text-secondary mb-4">Start your AI-powered job search today</p>
+
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label class="form-label">I am a</label>
+                            <select class="form-select" id="role" required>
+                                <option value="">Select your role</option>
+                                <option value="job_seeker">Job Seeker</option>
+                                <option value="recruiter">Recruiter</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="fullName" required placeholder="John Doe">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" id="email" required placeholder="you@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phone (Optional)</label>
+                            <input type="tel" class="form-input" id="phone" placeholder="+1 234 567 8900">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Location (Optional)</label>
+                            <input type="text" class="form-input" id="location" placeholder="New York, USA">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="password" required placeholder="••••••••">
+                            <small class="text-muted">At least 8 characters with uppercase, lowercase, and
+                                number</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" class="form-input" id="confirmPassword" required
+                                placeholder="••••••••">
+                        </div>
+
+                        <div id="errorMessage" class="hidden"
+                            style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 1rem; color: var(--error);">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-3 text-secondary">
+                        Already have an account? <a href="login.html" style="color: var(--primary-light);">Login
+                            here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const role = document.getElementById('role').value;
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const location = document.getElementById('location').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role,
+                        full_name: fullName,
+                        email,
+                        phone,
+                        location,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user data
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Redirect based on role
+                    if (data.user.role === 'job_seeker') {
+                        window.location.href = 'dashboard-seeker.html';
+                    } else {
+                        window.location.href = 'dashboard-recruiter.html';
+                    }
+                } else {
+                    errorDiv.textContent = data.error || 'Registration failed';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Jobs - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="jobs.html" class="active">Browse Jobs</a></li>
+                <li><a href="interview.html">Practice Interview</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="profile-analysis.html">Profile Analysis</a></li>
+                <li>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <!-- Search Header -->
+        <section class="search-header fade-in-down">
+            <h1 class="search-title">Find Your Dream Job</h1>
+            <p class="search-subtitle">Explore thousands of opportunities tailored to your skills</p>
+
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="Search by job title, company, or keywords...">
+                    <button class="btn btn-primary" onclick="performSearch()">Search</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters and Results -->
+        <div class="jobs-layout">
+            <!-- Filters Sidebar -->
+            <aside class="filters-sidebar fade-in-left">
+                <div class="filters-header">
+                    <h3>Filters</h3>
+                    <button class="btn-text" onclick="clearAllFilters()">Clear All</button>
+                </div>
+
+                <!-- Active Filters -->
+                <div id="activeFilters" class="active-filters"></div>
+
+                <!-- Location Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-title">📍 Location</h4>
+                    <div class="filter-options">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="location" value="remote" onchange="applyFilters()">
+                            <span>Remote</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="location" value="hybrid" onchange="applyFilters()">
+                            <span>Hybrid</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="location" value="onsite" onchange="applyFilters()">
+                            <span>On-site</span>
+                        </label>
+                    </div>
+                    <input type="text" class="filter-input" placeholder="Enter city..." id="locationInput"
+                        onchange="applyFilters()">
+                </div>
+
+                <!-- Job Type Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-title">💼 Job Type</h4>
+                    <div class="filter-options">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="job_type" value="full-time" onchange="applyFilters()">
+                            <span>Full-time</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="job_type" value="part-time" onchange="applyFilters()">
+                            <span>Part-time</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="job_type" value="contract" onchange="applyFilters()">
+                            <span>Contract</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="job_type" value="internship" onchange="applyFilters()">
+                            <span>Internship</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Experience Level Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-title">📊 Experience Level</h4>
+                    <div class="filter-options">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="experience" value="entry" onchange="applyFilters()">
+                            <span>Entry Level (0-2 years)</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="experience" value="mid" onchange="applyFilters()">
+                            <span>Mid Level (2-5 years)</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="experience" value="senior" onchange="applyFilters()">
+                            <span>Senior (5+ years)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Salary Range Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-title">💰 Salary Range</h4>
+                    <div class="salary-inputs">
+                        <input type="number" class="filter-input" placeholder="Min ($)" id="salaryMin"
+                            onchange="applyFilters()">
+                        <span>to</span>
+                        <input type="number" class="filter-input" placeholder="Max ($)" id="salaryMax"
+                            onchange="applyFilters()">
+                    </div>
+                </div>
+
+                <!-- Posted Date Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-title">📅 Posted Date</h4>
+                    <div class="filter-options">
+                        <label class="filter-radio">
+                            <input type="radio" name="posted_date" value="24h" onchange="applyFilters()">
+                            <span>Last 24 hours</span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="posted_date" value="7d" onchange="applyFilters()">
+                            <span>Last 7 days</span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="posted_date" value="30d" onchange="applyFilters()">
+                            <span>Last 30 days</span>
+                        </label>
+                        <label class="filter-radio">
+                            <input type="radio" name="posted_date" value="all" checked onchange="applyFilters()">
+                            <span>All time</span>
+                        </label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Jobs Results -->
+            <main class="jobs-main">
+                <!-- Sort and View Options -->
+                <div class="jobs-controls fade-in-up">
+                    <div class="results-count">
+                        <span id="resultsCount">Loading...</span>
+                    </div>
+                    <div class="sort-options">
+                        <label>Sort by:</label>
+                        <select id="sortSelect" class="sort-select" onchange="applySort()">
+                            <option value="relevance">Relevance</option>
+                            <option value="date">Date Posted</option>
+                            <option value="salary_high">Salary (High to Low)</option>
+                            <option value="salary_low">Salary (Low to High)</option>
+                            <option value="match_score">Match Score</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Jobs Grid -->
+                <div id="jobsContainer" class="jobs-grid">
+                    <!-- Jobs will be loaded here -->
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="pagination">
+                    <!-- Pagination will be loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Job Details Modal -->
+    <div id="jobDetailsModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeModal('jobDetailsModal')"></div>
+        <div class="modal-content modal-large scale-in">
+            <div class="modal-header">
+                <h2 id="modalJobTitle">Job Title</h2>
+                <button class="modal-close" onclick="closeModal('jobDetailsModal')">×</button>
+            </div>
+            <div class="modal-body" id="jobDetailsContent">
+                <!-- Job details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/jobs.js"></script>
+</body>
+
+</html>

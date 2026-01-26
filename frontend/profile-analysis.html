@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Analysis - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="jobs.html">Browse Jobs</a></li>
+                <li><a href="interview.html">Practice Interview</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="profile-analysis.html" class="active">Profile Analysis</a></li>
+                <li>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <!-- Header -->
+        <section class="profile-analysis-header fade-in-down">
+            <h1>📊 Profile Analysis</h1>
+            <p class="subtitle">AI-powered analysis of your GitHub and LeetCode profiles</p>
+        </section>
+
+        <!-- Profile Links Section -->
+        <section class="profile-links-section card fade-in-up">
+            <div class="section-header">
+                <h2>🔗 Your Profiles</h2>
+                <button class="btn btn-primary" onclick="refreshAnalysis()">
+                    🔄 Refresh Analysis
+                </button>
+            </div>
+
+            <div class="profile-links-grid" id="profileLinksGrid">
+                <!-- Profile links will be loaded here -->
+            </div>
+
+            <button class="btn btn-outline" onclick="openEditLinksModal()">
+                ✏️ Edit Profile Links
+            </button>
+        </section>
+
+        <!-- Overall Score -->
+        <section class="overall-score-section fade-in-up delay-100">
+            <div class="score-card-large card">
+                <h2>Overall Score</h2>
+                <div class="score-display">
+                    <div class="score-circle-xl" id="overallScoreCircle" style="--score: 0">
+                        <span class="score-value-xl" id="overallScoreValue">0</span>
+                    </div>
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <span class="score-label">GitHub</span>
+                            <span class="score-value" id="githubScore">0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">LeetCode</span>
+                            <span class="score-value" id="leetcodeScore">0</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="score-description" id="scoreDescription">Loading analysis...</p>
+            </div>
+        </section>
+
+        <!-- Platform Analysis -->
+        <div class="platform-analysis-grid">
+            <!-- GitHub Analysis -->
+            <section class="platform-card card fade-in-up delay-200">
+                <div class="platform-header">
+                    <div class="platform-icon">
+                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                            alt="GitHub" width="40">
+                    </div>
+                    <div>
+                        <h3>GitHub Analysis</h3>
+                        <p class="platform-username" id="githubUsername">Not connected</p>
+                    </div>
+                </div>
+
+                <div class="platform-stats" id="githubStats">
+                    <!-- GitHub stats will be loaded here -->
+                </div>
+
+                <div class="insights-section">
+                    <h4>💪 Strengths</h4>
+                    <ul id="githubStrengths" class="insights-list">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+
+                <div class="insights-section">
+                    <h4>📈 Improvements</h4>
+                    <ul id="githubImprovements" class="insights-list">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- LeetCode Analysis -->
+            <section class="platform-card card fade-in-up delay-300">
+                <div class="platform-header">
+                    <div class="platform-icon">
+                        <span style="font-size: 2rem;">💻</span>
+                    </div>
+                    <div>
+                        <h3>LeetCode Analysis</h3>
+                        <p class="platform-username" id="leetcodeUsername">Not connected</p>
+                    </div>
+                </div>
+
+                <div class="platform-stats" id="leetcodeStats">
+                    <!-- LeetCode stats will be loaded here -->
+                </div>
+
+                <div class="problems-chart-container">
+                    <canvas id="problemsChart"></canvas>
+                </div>
+
+                <div class="insights-section">
+                    <h4>💪 Strengths</h4>
+                    <ul id="leetcodeStrengths" class="insights-list">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+
+                <div class="insights-section">
+                    <h4>📈 Improvements</h4>
+                    <ul id="leetcodeImprovements" class="insights-list">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- AI Recommendations -->
+        <section class="recommendations-section card fade-in-up delay-400">
+            <h2>🤖 AI-Powered Recommendations</h2>
+            <p class="section-subtitle">Personalized action items to improve your profile</p>
+
+            <div id="recommendationsList" class="recommendations-list">
+                <!-- Recommendations will be loaded here -->
+            </div>
+        </section>
+
+        <!-- GitHub Repositories -->
+        <section class="repositories-section card fade-in-up delay-500" id="repositoriesSection" style="display: none;">
+            <h2>⭐ Top Repositories</h2>
+            <div id="repositoriesList" class="repositories-list">
+                <!-- Repositories will be loaded here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Edit Links Modal -->
+    <div id="editLinksModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeModal('editLinksModal')"></div>
+        <div class="modal-content scale-in">
+            <div class="modal-header">
+                <h2>Edit Profile Links</h2>
+                <button class="modal-close" onclick="closeModal('editLinksModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editLinksForm">
+                    <div class="form-group">
+                        <label class="form-label">GitHub Username</label>
+                        <input type="text" id="editGithubUsername" class="form-input" placeholder="your-username">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">LeetCode Username</label>
+                        <input type="text" id="editLeetcodeUsername" class="form-input" placeholder="your-username">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn URL</label>
+                        <input type="text" id="editLinkedinUrl" class="form-input"
+                            placeholder="linkedin.com/in/your-profile">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Portfolio URL</label>
+                        <input type="text" id="editPortfolioUrl" class="form-input"
+                            placeholder="https://yourportfolio.com">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Save & Analyze</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/profile-analysis.js"></script>
+</body>
+
+</html>
