@@ -7,13 +7,21 @@ import re
 from datetime import datetime
 import PyPDF2
 import docx
-import spacy
+try:
+    import spacy
+except ImportError:
+    spacy = None
 
 # Load spaCy model (do this once at module level)
-try:
-    nlp = spacy.load('en_core_web_sm')  # Use small model for now
-except OSError:
-    print("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+# Load spaCy model (do this once at module level)
+if spacy:
+    try:
+        nlp = spacy.load('en_core_web_sm')  # Use small model for now
+    except OSError:
+        print("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+        nlp = None
+else:
+    print("spaCy module not found.")
     nlp = None
 
 

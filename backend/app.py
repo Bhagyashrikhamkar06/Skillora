@@ -7,8 +7,8 @@ load_dotenv()  # Load .env file FIRST
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+# from flask_limiter import Limiter
+# from flask_limiter.util import get_remote_address
 from config import config
 from models import db
 
@@ -32,11 +32,12 @@ def create_app(config_name='development'):
     JWTManager(app)
     
     # Rate limiting
-    limiter = Limiter(
-        app=app,
-        key_func=get_remote_address,
-        default_limits=[app.config['RATELIMIT_DEFAULT']]
-    )
+    # Rate limiting disabled for stability
+    # limiter = Limiter(
+    #     app=app,
+    #     key_func=get_remote_address,
+    #     default_limits=[app.config['RATELIMIT_DEFAULT']]
+    # )
     
     # Register blueprints
     from routes.auth import auth_bp
