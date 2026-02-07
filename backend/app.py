@@ -25,6 +25,7 @@ def create_app(config_name='development'):
     """Application factory"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
     
     # Initialize extensions
     db.init_app(app)
@@ -55,8 +56,8 @@ def create_app(config_name='development'):
     app.register_blueprint(profile_analysis_bp, url_prefix='/api/profile-analysis')
     
     # Tables already created via schema.sql - no need for create_all()
-    # with app.app_context():
-    #     db.create_all()
+    with app.app_context():
+        db.create_all()
     
     # Health check endpoint
     @app.route('/api/health')

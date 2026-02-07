@@ -35,7 +35,7 @@ def extract_profile_links():
     Extract profile links from resume text
     """
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         resume_text = data.get('resume_text', '')
         
@@ -81,7 +81,7 @@ def scrape_and_analyze():
     Scrape social profiles and perform analysis
     """
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         # Get profile links
         profile_links = ProfileLinks.query.filter_by(user_id=user_id).first()
@@ -153,7 +153,7 @@ def get_analysis_report():
     Get comprehensive profile analysis report
     """
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         profile_links = ProfileLinks.query.filter_by(user_id=user_id).first()
         if not profile_links:
@@ -182,7 +182,7 @@ def update_profile_links():
     Manually update profile links
     """
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         profile_links = ProfileLinks.query.filter_by(user_id=user_id).first()
@@ -219,7 +219,7 @@ def refresh_analysis():
     Force refresh profile analysis (bypass cache)
     """
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         profile_links = ProfileLinks.query.filter_by(user_id=user_id).first()
         if not profile_links:

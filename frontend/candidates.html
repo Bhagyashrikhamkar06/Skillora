@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidates - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard-recruiter.html">Dashboard</a></li>
+                <li><a href="jobs.html">Manage Jobs</a></li>
+                <li><a href="candidates.html" class="active">Candidates</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><button onclick="logout()" class="btn btn-outline">Logout</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Candidates Container -->
+    <div class="container" style="margin-top: 2rem;">
+        <div class="header-actions">
+            <h1>Candidates</h1>
+            <div class="filter-group">
+                <select class="form-select" id="jobFilter">
+                    <option value="">All Jobs</option>
+                    <!-- Job options will be populated dynamically -->
+                </select>
+                <select class="form-select" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="interview">Interview</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="hired">Hired</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="candidatesList" class="candidates-grid">
+            <!-- Candidates will be loaded here -->
+            <div class="empty-state">
+                <p>Select a job to view candidates</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script>
+        const api = new APIClient();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!requireAuth()) return;
+
+            // Load Jobs for Filter
+            try {
+                // Ideally getMyJobs
+                const response = await api.getJobs();
+                const jobs = response.jobs || [];
+                const jobFilter = document.getElementById('jobFilter');
+
+                jobs.forEach(job => {
+                    const option = document.createElement('option');
+                    option.value = job.id;
+                    option.textContent = job.title;
+                    jobFilter.appendChild(option);
+                });
+
+                // Check URL params for pre-selected job
+                const urlParams = new URLSearchParams(window.location.search);
+                const jobId = urlParams.get('jobId');
+                if (jobId) {
+                    jobFilter.value = jobId;
+                    loadCandidates(jobId);
+                }
+
+                jobFilter.addEventListener('change', (e) => {
+                    loadCandidates(e.target.value);
+                });
+
+            } catch (error) {
+                console.error('Failed to load jobs', error);
+            }
+        });
+
+        async function loadCandidates(jobId) {
+            const container = document.getElementById('candidatesList');
+            container.innerHTML = '<div class="loading-spinner"></div>';
+
+            if (!jobId) {
+                container.innerHTML = '<div class="empty-state"><p>Select a job to view candidates</p></div>';
+                return;
+            }
+
+            try {
+                const response = await api.getJobApplications(jobId);
+                const candidates = response.applications || [];
+
+                if (candidates.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No candidates found for this job.</p></div>';
+                    return;
+                }
+
+                container.innerHTML = candidates.map(app => {
+                    const candidate = app.applicant;
+                    return `
+                    <div class="candidate-card fade-in-up">
+                        <div class="candidate-header">
+                            <h3>${candidate.full_name || candidate.email}</h3>
+                            <span class="match-badge ${getScoreClass(app.match_score)}">${app.match_score || 0}% Match</span>
+                        </div>
+                        <p class="candidate-role">${candidate.bio || 'No bio provided'}</p>
+                        <div class="candidate-meta" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                             📍 ${candidate.location || 'Unknown'} • 📧 ${candidate.email}
+                        </div>
+                        <div class="candidate-actions">
+                            <button class="btn btn-outline btn-sm" onclick="viewCandidateProfile(${candidate.id})">View Profile</button>
+                            <select class="form-select-sm" onchange="updateStatus(${app.id}, this.value)">
+                                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
+                                <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
+                                <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                <option value="hired" ${app.status === 'hired' ? 'selected' : ''}>Hired</option>
+                            </select>
+                        </div>
+                    </div>
+                `}).join('');
+
+            } catch (error) {
+                console.error('Failed to load candidates', error);
+                container.innerHTML = '<p class="error-text">Failed to load candidates.</p>';
+            }
+        }
+
+        function getScoreClass(score) {
+            if (!score) return 'match-low';
+            if (score >= 90) return 'match-high';
+            if (score >= 70) return 'match-medium';
+            return 'match-low';
+        }
+
+        function viewCandidateProfile(id) {
+            toast.info('View Profile functionality coming soon');
+        }
+
+        async function updateStatus(applicationId, newStatus) {
+            try {
+                await api.updateApplicationStatus(applicationId, newStatus);
+                toast.success(`Status updated to ${newStatus}`);
+            } catch (error) {
+                console.error('Failed to update status', error);
+                toast.error('Failed to update status');
+            }
+        }
+    </script>
+    <style>
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .candidate-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .match-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .match-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .match-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .match-low {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .candidate-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            align-items: center;
+        }
+
+        .form-select-sm {
+            padding: 0.4rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</body>
+
+</html>

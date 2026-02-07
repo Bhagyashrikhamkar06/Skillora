@@ -40,14 +40,30 @@ async function loadDashboard() {
         showLoadingStates();
 
         // Load all data in parallel
-        const [user, recommendations, applications, savedJobs, interviews, resume] = await Promise.all([
-            api.getProfile().catch(() => null),
-            api.getRecommendations(5).catch(() => []),
-            api.getMyApplications().catch(() => []),
-            api.getSavedJobs().catch(() => []),
-            api.getInterviewHistory().catch(() => []),
-            api.getActiveResume().catch(() => null)
+        // We use catch to return default values so one failure doesn't break everything
+        const [
+            userData,
+            recommendationsData,
+            applicationsData,
+            savedJobsData,
+            interviewsData,
+            resumeData
+        ] = await Promise.all([
+            api.getProfile().catch(e => { console.error('Profile error:', e); return null; }),
+            api.getRecommendations(5).catch(e => { console.error('Recs error:', e); return { recommendations: [] }; }),
+            api.getMyApplications().catch(e => { console.error('Apps error:', e); return { applications: [] }; }),
+            api.getSavedJobs().catch(e => { console.error('Saved error:', e); return { jobs: [] }; }),
+            api.getInterviewHistory().catch(e => { console.error('Interview error:', e); return { sessions: [] }; }),
+            api.getActiveResume().catch(e => { console.error('Resume error:', e); return null; })
         ]);
+
+        // Unpack data from API responses (which are wrapper objects like { user: ... })
+        const user = userData ? userData.user : null;
+        const recommendations = recommendationsData ? (recommendationsData.recommendations || []) : [];
+        const applications = applicationsData ? (applicationsData.applications || []) : [];
+        const savedJobs = savedJobsData ? (savedJobsData.jobs || []) : [];
+        const interviews = interviewsData ? (interviewsData.sessions || []) : [];
+        const resume = resumeData ? resumeData.resume : null;
 
         // Store data
         dashboardData = { user, recommendations, applications, savedJobs, interviews, resume };
@@ -63,7 +79,14 @@ async function loadDashboard() {
 
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        toast.error('Failed to load dashboard data');
+        toast.error(`Dashboard Load Error: ${error.message}`);
+
+        // Show error states in widgets to remove skeletons
+        const widgets = ['recommendationsWidget', 'applicationsWidget', 'savedJobsWidget', 'interviewWidget', 'resumeWidget'];
+        widgets.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<div class="error-state"><p>Failed to load data.</p></div>';
+        });
     }
 }
 

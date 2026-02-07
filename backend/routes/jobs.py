@@ -17,7 +17,7 @@ jobs_bp = Blueprint('jobs', __name__)
 def create_job():
     """Create a new job posting (recruiter only)"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user or user.role != 'recruiter':
@@ -84,9 +84,10 @@ def get_jobs():
             query = query.filter_by(job_type=job_type)
         
         if skills:
-            skill_list = [s.strip() for s in skills.split(',')]
-            # Filter jobs that have any of the required skills
-            query = query.filter(Job.required_skills.overlap(skill_list))
+            # Skill filtering disabled for SQLite compatibility (requires Postgres ARRAY)
+            pass
+            # skill_list = [s.strip() for s in skills.split(',')]
+            # query = query.filter(Job.required_skills.overlap(skill_list))
         
         if experience_min is not None:
             query = query.filter(Job.experience_min <= experience_min)
@@ -144,7 +145,7 @@ def get_job(job_id):
 def update_job(job_id):
     """Update job (recruiter only, own jobs only)"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         job = Job.query.filter_by(id=job_id, recruiter_id=user_id).first()
         
         if not job:
@@ -193,7 +194,7 @@ def update_job(job_id):
 def delete_job(job_id):
     """Delete job (recruiter only, own jobs only)"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         job = Job.query.filter_by(id=job_id, recruiter_id=user_id).first()
         
         if not job:
@@ -214,7 +215,7 @@ def delete_job(job_id):
 def apply_to_job(job_id):
     """Apply to a job"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user or user.role != 'job_seeker':
@@ -259,7 +260,7 @@ def apply_to_job(job_id):
 def save_job(job_id):
     """Save a job for later"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         job = Job.query.get(job_id)
         if not job:
@@ -286,7 +287,7 @@ def save_job(job_id):
 def get_saved_jobs():
     """Get user's saved jobs"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         saved_jobs = SavedJob.query.filter_by(user_id=user_id).all()
         job_ids = [sj.job_id for sj in saved_jobs]
@@ -307,7 +308,7 @@ def get_saved_jobs():
 def get_my_applications():
     """Get user's job applications"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         applications = Application.query.filter_by(user_id=user_id).order_by(Application.applied_date.desc()).all()
         
@@ -323,4 +324,77 @@ def get_my_applications():
         }), 200
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@jobs_bp.route('/<int:job_id>/applications', methods=['GET'])
+@jwt_required()
+def get_job_applications(job_id):
+    """Get all applications for a specific job (recruiter only)"""
+    try:
+        user_id = int(get_jwt_identity())
+        
+        # Verify job belongs to recruiter
+        job = Job.query.filter_by(id=job_id, recruiter_id=user_id).first()
+        if not job:
+            return jsonify({'error': 'Job not found or unauthorized'}), 404
+        
+        # Get applications joined with user data
+        applications = db.session.query(Application, User).join(User).filter(Application.job_id == job_id).all()
+        
+        result = []
+        for app, applicant in applications:
+            app_dict = app.to_dict()
+            # Add applicant details
+            app_dict['applicant'] = {
+                'id': applicant.id,
+                'full_name': applicant.full_name,
+                'email': applicant.email,
+                'location': applicant.location,
+                'bio': applicant.bio,
+                'profile_photo_url': applicant.profile_photo_url
+            }
+            result.append(app_dict)
+            
+        return jsonify({
+            'applications': result,
+            'count': len(result)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@jobs_bp.route('/applications/<int:application_id>/status', methods=['PUT'])
+@jwt_required()
+def update_application_status(application_id):
+    """Update application status (recruiter only)"""
+    try:
+        user_id = int(get_jwt_identity())
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        if not new_status:
+            return jsonify({'error': 'Status is required'}), 400
+            
+        # Get application
+        application = Application.query.get(application_id)
+        if not application:
+            return jsonify({'error': 'Application not found'}), 404
+            
+        # Verify job belongs to recruiter
+        job = Job.query.get(application.job_id)
+        if job.recruiter_id != user_id:
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        application.status = new_status
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Status updated successfully',
+            'application': application.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

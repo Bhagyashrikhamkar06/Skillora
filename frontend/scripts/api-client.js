@@ -199,6 +199,17 @@ class APIClient {
         return this.request('/jobs/my-applications');
     }
 
+    async getJobApplications(jobId) {
+        return this.request(`/jobs/${jobId}/applications`);
+    }
+
+    async updateApplicationStatus(applicationId, status) {
+        return this.request(`/jobs/applications/${applicationId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
+    }
+
     // Recommendations endpoints
     async getRecommendations(limit = 20) {
         return this.request(`/recommendations/?limit=${limit}`);

@@ -30,7 +30,7 @@ def get_ai_service():
 def start_interview():
     """Start a new mock interview session"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user or user.role != 'job_seeker':
@@ -102,7 +102,7 @@ def start_interview():
 def submit_answer():
     """Submit answer and get next question"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         # Validate required fields
@@ -209,7 +209,7 @@ def submit_answer():
 def complete_interview(session_id):
     """Complete interview and get final feedback"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         # Get session
         session = InterviewSession.query.filter_by(id=session_id, user_id=user_id).first()
@@ -280,7 +280,7 @@ def complete_interview(session_id):
 def get_interview_session(session_id):
     """Get interview session details"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         session = InterviewSession.query.filter_by(id=session_id, user_id=user_id).first()
         
@@ -304,7 +304,7 @@ def get_interview_session(session_id):
 def get_interview_history():
     """Get user's interview history"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         sessions = InterviewSession.query.filter_by(user_id=user_id).order_by(InterviewSession.start_time.desc()).all()
         

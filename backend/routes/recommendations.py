@@ -20,7 +20,7 @@ def get_engine():
 def get_recommendations():
     """Get personalized job recommendations"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         
         # Get limit from query params
         limit = request.args.get('limit', 20, type=int)

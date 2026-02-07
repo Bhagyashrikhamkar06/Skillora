@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Job - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard-recruiter.html">Dashboard</a></li>
+                <li><a href="jobs.html" class="active">Manage Jobs</a></li>
+                <li><a href="candidates.html">Candidates</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><button onclick="logout()" class="btn btn-outline">Logout</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Post Job Container -->
+    <div class="container" style="margin-top: 2rem;">
+        <div class="card">
+            <div class="card-header">
+                <h2>Post a New Job</h2>
+            </div>
+            <div class="card-body">
+                <form id="postJobForm">
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" class="form-input" id="title" required
+                            placeholder="e.g. Senior Frontend Engineer">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" class="form-input" id="company" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="location" required
+                            placeholder="e.g. Remote, New York">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Job Type</label>
+                        <select class="form-select" id="jobType" required>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Internship">Internship</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Salary Range</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <input type="number" class="form-input" id="salaryMin" placeholder="Min" required>
+                            <input type="number" class="form-input" id="salaryMax" placeholder="Max" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" id="description" rows="6" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Required Skills (comma separated)</label>
+                        <input type="text" class="form-input" id="skills" placeholder="e.g. React, Node.js, Python">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Post Job</button>
+                    <button type="button" class="btn btn-outline"
+                        onclick="window.location.href='dashboard-recruiter.html'">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script>
+        const api = new APIClient();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+
+            // Pre-fill company name if available in profile
+            const user = getCurrentUser();
+            if (user && user.company) {
+                document.getElementById('company').value = user.company;
+            }
+
+            document.getElementById('postJobForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const jobData = {
+                    title: document.getElementById('title').value,
+                    company_name: document.getElementById('company').value,
+                    location: document.getElementById('location').value,
+                    job_type: document.getElementById('jobType').value,
+                    salary_min: document.getElementById('salaryMin').value,
+                    salary_max: document.getElementById('salaryMax').value,
+                    description: document.getElementById('description').value,
+                    required_skills: document.getElementById('skills').value.split(',').map(s => s.trim()).filter(s => s)
+                };
+
+                try {
+                    await api.createJob(jobData);
+                    toast.success('Job posted successfully!');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-recruiter.html';
+                    }, 1500);
+                } catch (error) {
+                    toast.error(error.message || 'Failed to post job');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

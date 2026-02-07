@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard-seeker.html">Dashboard</a></li>
+                <li><a href="jobs.html">Browse Jobs</a></li>
+                <li><a href="interview.html" class="active">Practice Interview</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><button onclick="logout()" class="btn btn-outline">Logout</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <!-- Setup Phase -->
+        <div id="setupPhase" class="card fade-in-up">
+            <div class="card-header">
+                <h2>AI Interview Practice</h2>
+                <p>Sharpen your skills with our AI-powered mock interviewer</p>
+            </div>
+            <div class="card-body">
+                <form id="interviewSetupForm">
+                    <div class="form-group">
+                        <label class="form-label">Select Job Role</label>
+                        <select class="form-select" id="jobRole" required>
+                            <option value="Frontend Developer">Frontend Developer</option>
+                            <option value="Backend Developer">Backend Developer</option>
+                            <option value="Full Stack Developer">Full Stack Developer</option>
+                            <option value="Data Scientist">Data Scientist</option>
+                            <option value="Product Manager">Product Manager</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Interview Type</label>
+                        <select class="form-select" id="interviewType">
+                            <option value="Technical">Technical</option>
+                            <option value="Behavioral">Behavioral</option>
+                            <option value="HR">HR</option>
+                        </select>
+                    </div>
+
+                    <div class="info-box">
+                        <p>ℹ️ You will be asked 5 questions. Speak clearly or type your answers.</p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+                        Start Interview
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Interview Phase -->
+        <div id="interviewPhase" class="card fade-in-up" style="display: none;">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="interviewTitle">Technical Interview</h2>
+                    <span class="badge" id="questionCounter">Question 1/5</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="interviewer-avatar">
+                    <div class="avatar-circle"
+                        style="background: var(--primary); color: white; width: 60px; height: 60px; font-size: 1.5rem;">
+                        AI</div>
+                </div>
+
+                <div class="chat-bubble left mb-4" id="questionText">
+                    Loading question...
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Your Answer</label>
+                    <textarea class="form-input" id="answerInput" rows="4"
+                        placeholder="Type your answer here..."></textarea>
+                </div>
+
+                <div class="actions" style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" id="micBtn">🎤 Record Answer (Coming Soon)</button>
+                    <button class="btn btn-primary" id="submitAnswerBtn">Submit Answer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Phase -->
+        <div id="feedbackPhase" class="card fade-in-up" style="display: none;">
+            <div class="card-header">
+                <h2>Interview Complete! 🎉</h2>
+            </div>
+            <div class="card-body text-center">
+                <div class="score-circle-large mb-4">
+                    <span id="finalScore">--</span>
+                </div>
+                <h3>Great Job!</h3>
+                <p class="text-secondary mb-4">Here is how you performed:</p>
+
+                <div class="stats-grid" id="feedbackStats">
+                    <!-- Stats will be injected here -->
+                </div>
+
+                <div
+                    style="margin-top: 2rem; text-align: left; background: var(--background); padding: 1rem; border-radius: 8px;">
+                    <h4>Detailed Feedback</h4>
+                    <p id="feedbackText" style="color: var(--text-secondary); line-height: 1.6;"></p>
+                </div>
+
+                <button class="btn btn-primary mt-4" onclick="location.reload()">Practice Again</button>
+                <button class="btn btn-outline mt-4" onclick="window.location.href='dashboard-seeker.html'">Back to
+                    Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script>
+        const api = new APIClient();
+        let currentSessionId = null;
+        let currentQuestion = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+
+            document.getElementById('interviewSetupForm').addEventListener('submit', startInterview);
+            document.getElementById('submitAnswerBtn').addEventListener('click', submitAnswer);
+        });
+
+        async function startInterview(e) {
+            e.preventDefault();
+            const jobRole = document.getElementById('jobRole').value;
+            const type = document.getElementById('interviewType').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Starting...';
+
+                const response = await api.startInterview(jobRole, type);
+                currentSessionId = response.session_id;
+                currentQuestion = response.question_number;
+
+                document.getElementById('setupPhase').style.display = 'none';
+                document.getElementById('interviewPhase').style.display = 'block';
+
+                document.getElementById('interviewTitle').textContent = `${jobRole} Interview`;
+                document.getElementById('questionText').textContent = response.question;
+                document.getElementById('questionCounter').textContent = `Question ${currentQuestion}/5`;
+
+            } catch (error) {
+                console.error(error);
+                toast.error(error.message || 'Failed to start interview');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Start Interview';
+            }
+        }
+
+        async function submitAnswer() {
+            const answerInput = document.getElementById('answerInput');
+            const answer = answerInput.value;
+            const submitBtn = document.getElementById('submitAnswerBtn');
+
+            if (!answer) {
+                toast.error('Please provide an answer');
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Analyzing...';
+
+                const response = await api.submitAnswer(currentSessionId, currentQuestion, answer);
+
+                if (response.next_question) {
+                    // Load next question
+                    currentQuestion = response.next_question.question_number;
+                    document.getElementById('questionText').textContent = response.next_question.question;
+                    document.getElementById('questionCounter').textContent = `Question ${currentQuestion}/5`;
+                    answerInput.value = '';
+
+                    // Show quick feedback toast
+                    const score = response.evaluation.score;
+                    if (score >= 8) toast.success(`Great answer! Score: ${score}/10`);
+                    else if (score >= 5) toast.info(`Good effort. Score: ${score}/10`);
+                    else toast.warning(`Keep practicing. Score: ${score}/10`);
+
+                } else if (response.interview_complete) {
+                    await completeInterview();
+                }
+
+            } catch (error) {
+                console.error(error);
+                toast.error(error.message || 'Failed to submit answer');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Answer';
+            }
+        }
+
+        async function completeInterview() {
+            try {
+                const response = await api.completeInterview(currentSessionId);
+
+                document.getElementById('interviewPhase').style.display = 'none';
+                document.getElementById('feedbackPhase').style.display = 'block';
+
+                document.getElementById('finalScore').textContent = response.overall_score;
+                document.getElementById('feedbackText').textContent = response.feedback;
+
+            } catch (error) {
+                console.error(error);
+                toast.error('Failed to generate final report');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -31,7 +31,7 @@ def get_parser():
 def upload_resume():
     """Upload and parse resume"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -106,7 +106,7 @@ def upload_resume():
 def get_resume(resume_id):
     """Get resume details"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         resume = Resume.query.filter_by(id=resume_id, user_id=user_id).first()
         
         if not resume:
@@ -129,7 +129,7 @@ def get_resume(resume_id):
 def get_active_resume():
     """Get user's active resume"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         resume = Resume.query.filter_by(user_id=user_id, is_active=True).first()
         
         if not resume:
@@ -152,7 +152,7 @@ def get_active_resume():
 def get_all_resumes():
     """Get all user's resumes"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         resumes = Resume.query.filter_by(user_id=user_id).order_by(Resume.upload_date.desc()).all()
         
         return jsonify({
@@ -169,7 +169,7 @@ def get_all_resumes():
 def delete_resume(resume_id):
     """Delete resume"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         resume = Resume.query.filter_by(id=resume_id, user_id=user_id).first()
         
         if not resume:
@@ -194,7 +194,7 @@ def delete_resume(resume_id):
 def activate_resume(resume_id):
     """Set resume as active"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         resume = Resume.query.filter_by(id=resume_id, user_id=user_id).first()
         
         if not resume:

@@ -15,7 +15,7 @@ class Job(db.Model):
     title = db.Column(db.String(255), nullable=False)
     company_name = db.Column(db.String(255))
     description = db.Column(db.Text)
-    required_skills = db.Column(db.ARRAY(db.String))  # Array of skills
+    required_skills = db.Column(db.JSON)  # Array of skills
     experience_min = db.Column(db.Integer)
     experience_max = db.Column(db.Integer)
     location = db.Column(db.String(255))
