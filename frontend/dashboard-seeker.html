@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">🚀 AI Job Portal</a>
+            <ul class="navbar-menu">
+                <li><a href="dashboard-seeker.html" class="active">Dashboard</a></li>
+                <li><a href="jobs.html">Browse Jobs</a></li>
+                <li><a href="interview.html">Practice Interview</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="profile-analysis.html">Profile Analysis</a></li>
+                <li>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="container" style="margin-top: 2rem;">
+        <!-- Welcome Section -->
+        <section class="dashboard-header fade-in-down">
+            <div class="user-welcome">
+                <div class="user-avatar">
+                    <div class="avatar-circle" id="userAvatar">
+                        <span id="userInitials">U</span>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <h1 class="welcome-title">Welcome back, <span id="userName">User</span>! 👋</h1>
+                    <p class="welcome-subtitle">Here's what's happening with your job search today</p>
+                </div>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card scale-in delay-100">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="recommendationsCount" data-counter="0">0</div>
+                        <div class="stat-label">New Matches</div>
+                    </div>
+                </div>
+                <div class="stat-card scale-in delay-200">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="applicationsCount" data-counter="0">0</div>
+                        <div class="stat-label">Applications</div>
+                    </div>
+                </div>
+                <div class="stat-card scale-in delay-300">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="savedJobsCount" data-counter="0">0</div>
+                        <div class="stat-label">Saved Jobs</div>
+                    </div>
+                </div>
+                <div class="stat-card scale-in delay-400">
+                    <div class="stat-icon">🎤</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="interviewsCount" data-counter="0">0</div>
+                        <div class="stat-label">Interviews</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Left Column -->
+            <div class="dashboard-main">
+                <!-- Job Recommendations Widget -->
+                <section class="dashboard-widget fade-in-up delay-100">
+                    <div class="widget-header">
+                        <h2 class="widget-title">🎯 Recommended Jobs</h2>
+                        <a href="jobs.html" class="widget-link">View All →</a>
+                    </div>
+                    <div class="widget-content" id="recommendationsWidget">
+                        <!-- Loading skeleton will be shown here -->
+                    </div>
+                </section>
+
+                <!-- Application Status Tracker -->
+                <section class="dashboard-widget fade-in-up delay-200">
+                    <div class="widget-header">
+                        <h2 class="widget-title">📋 Recent Applications</h2>
+                        <a href="#" class="widget-link">View All →</a>
+                    </div>
+                    <div class="widget-content" id="applicationsWidget">
+                        <!-- Applications will be loaded here -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="dashboard-sidebar">
+                <!-- Quick Actions -->
+                <section class="dashboard-widget fade-in-up delay-300">
+                    <div class="widget-header">
+                        <h2 class="widget-title">⚡ Quick Actions</h2>
+                    </div>
+                    <div class="widget-content">
+                        <div class="quick-actions">
+                            <button class="action-btn" onclick="window.location.href='#upload-resume'">
+                                <span class="action-icon">📄</span>
+                                <span class="action-text">Upload Resume</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='interview.html'">
+                                <span class="action-icon">🎤</span>
+                                <span class="action-text">Start Interview</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='jobs.html'">
+                                <span class="action-icon">🔍</span>
+                                <span class="action-text">Search Jobs</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='profile.html'">
+                                <span class="action-icon">👤</span>
+                                <span class="action-text">Edit Profile</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Resume Status -->
+                <section class="dashboard-widget fade-in-up delay-400">
+                    <div class="widget-header">
+                        <h2 class="widget-title">📄 Resume Status</h2>
+                    </div>
+                    <div class="widget-content" id="resumeWidget">
+                        <!-- Resume info will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Saved Jobs -->
+                <section class="dashboard-widget fade-in-up delay-500">
+                    <div class="widget-header">
+                        <h2 class="widget-title">💾 Saved Jobs</h2>
+                        <a href="#" class="widget-link">View All →</a>
+                    </div>
+                    <div class="widget-content" id="savedJobsWidget">
+                        <!-- Saved jobs will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Interview History -->
+                <section class="dashboard-widget fade-in-up delay-600">
+                    <div class="widget-header">
+                        <h2 class="widget-title">🎤 Interview Practice</h2>
+                    </div>
+                    <div class="widget-content" id="interviewWidget">
+                        <!-- Interview history will be loaded here -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Resume Modal -->
+    <div id="uploadResumeModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeModal('uploadResumeModal')"></div>
+        <div class="modal-content scale-in">
+            <div class="modal-header">
+                <h2>Upload Resume</h2>
+                <button class="modal-close" onclick="closeModal('uploadResumeModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <p class="upload-text">Drag & drop your resume here</p>
+                    <p class="upload-subtext">or click to browse</p>
+                    <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('resumeInput').click()">
+                        Choose File
+                    </button>
+                </div>
+                <div id="uploadProgress" style="display: none; margin-top: 20px;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px; color: var(--text-secondary);">
+                        Uploading and analyzing...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/api-client.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/dashboard.js"></script>
+</body>
+
+</html>

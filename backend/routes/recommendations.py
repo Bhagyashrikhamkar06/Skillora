@@ -6,7 +6,13 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.recommendation_engine import RecommendationEngine
 
 recommendations_bp = Blueprint('recommendations', __name__)
-engine = RecommendationEngine()
+engine = None
+
+def get_engine():
+    global engine
+    if engine is None:
+        engine = RecommendationEngine()
+    return engine
 
 
 @recommendations_bp.route('/', methods=['GET'])
@@ -20,7 +26,7 @@ def get_recommendations():
         limit = request.args.get('limit', 20, type=int)
         
         # Get recommendations
-        recommendations = engine.recommend_jobs(user_id, limit=limit)
+        recommendations = get_engine().recommend_jobs(user_id, limit=limit)
         
         if not recommendations:
             return jsonify({

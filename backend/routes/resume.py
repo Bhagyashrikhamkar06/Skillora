@@ -17,7 +17,13 @@ except ImportError:
 from utils.file_handler import save_uploaded_file, delete_file
 
 resume_bp = Blueprint('resume', __name__)
-parser = ResumeParser()
+parser = None
+
+def get_parser():
+    global parser
+    if parser is None:
+        parser = ResumeParser()
+    return parser
 
 
 @resume_bp.route('/upload', methods=['POST'])
@@ -45,7 +51,7 @@ def upload_resume():
         
         # Parse resume
         try:
-            parsed_data, ats_score = parser.parse_resume(file_path)
+            parsed_data, ats_score = get_parser().parse_resume(file_path)
         except Exception as e:
             # Delete file if parsing fails
             delete_file(file_path)

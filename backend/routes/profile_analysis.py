@@ -12,8 +12,20 @@ from services.profile_analyzer import ProfileAnalyzer
 
 profile_analysis_bp = Blueprint('profile_analysis', __name__)
 
-scraper = ProfileScraper()
-analyzer = ProfileAnalyzer()
+scraper = None
+analyzer = None
+
+def get_scraper():
+    global scraper
+    if scraper is None:
+        scraper = ProfileScraper()
+    return scraper
+
+def get_analyzer():
+    global analyzer
+    if analyzer is None:
+        analyzer = ProfileAnalyzer()
+    return analyzer
 
 
 @profile_analysis_bp.route('/extract', methods=['POST'])
@@ -31,7 +43,7 @@ def extract_profile_links():
             return jsonify({'error': 'Resume text is required'}), 400
         
         # Extract links
-        links = scraper.extract_profile_links(resume_text)
+        links = get_scraper().extract_profile_links(resume_text)
         
         # Get or create profile_links record
         profile_links = ProfileLinks.query.filter_by(user_id=user_id).first()
@@ -90,8 +102,8 @@ def scrape_and_analyze():
         github_data = {}
         github_analysis = {'score': 0}
         if profile_links.github_username:
-            github_data = scraper.scrape_github_profile(profile_links.github_username)
-            github_analysis = analyzer.analyze_github_profile(github_data)
+            github_data = get_scraper().scrape_github_profile(profile_links.github_username)
+            github_analysis = get_analyzer().analyze_github_profile(github_data)
             profile_links.github_data = github_data
             profile_links.github_score = github_analysis.get('score', 0)
         
@@ -99,17 +111,17 @@ def scrape_and_analyze():
         leetcode_data = {}
         leetcode_analysis = {'score': 0}
         if profile_links.leetcode_username:
-            leetcode_data = scraper.scrape_leetcode_profile(profile_links.leetcode_username)
-            leetcode_analysis = analyzer.analyze_leetcode_profile(leetcode_data)
+            leetcode_data = get_scraper().scrape_leetcode_profile(profile_links.leetcode_username)
+            leetcode_analysis = get_analyzer().analyze_leetcode_profile(leetcode_data)
             profile_links.leetcode_data = leetcode_data
             profile_links.leetcode_score = leetcode_analysis.get('score', 0)
         
         # Calculate overall score
-        overall_score = analyzer.calculate_overall_score(github_analysis, leetcode_analysis)
+        overall_score = get_analyzer().calculate_overall_score(github_analysis, leetcode_analysis)
         profile_links.overall_score = overall_score
         
         # Generate AI recommendations
-        recommendations = analyzer.generate_improvement_recommendations(
+        recommendations = get_analyzer().generate_improvement_recommendations(
             github_data, 
             leetcode_data
         )
@@ -148,8 +160,8 @@ def get_analysis_report():
             return jsonify({'error': 'No profile analysis found'}), 404
         
         # Re-analyze if needed
-        github_analysis = analyzer.analyze_github_profile(profile_links.github_data or {})
-        leetcode_analysis = analyzer.analyze_leetcode_profile(profile_links.leetcode_data or {})
+        github_analysis = get_analyzer().analyze_github_profile(profile_links.github_data or {})
+        leetcode_analysis = get_analyzer().analyze_leetcode_profile(profile_links.leetcode_data or {})
         
         return jsonify({
             'profile': profile_links.to_dict(),
@@ -214,7 +226,7 @@ def refresh_analysis():
             return jsonify({'error': 'No profile links found'}), 404
         
         # Clear cache
-        scraper.clear_cache()
+        get_scraper().clear_cache()
         
         # Force re-scrape by setting last_analyzed_at to None
         profile_links.last_analyzed_at = None

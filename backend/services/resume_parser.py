@@ -12,17 +12,19 @@ try:
 except ImportError:
     spacy = None
 
-# Load spaCy model (do this once at module level)
-# Load spaCy model (do this once at module level)
-if spacy:
-    try:
-        nlp = spacy.load('en_core_web_sm')  # Use small model for now
-    except OSError:
-        print("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
-        nlp = None
-else:
-    print("spaCy module not found.")
-    nlp = None
+# Don't load spaCy model at module level - do it lazily when needed
+nlp = None
+
+def get_nlp():
+    """Lazy load spaCy model"""
+    global nlp
+    if nlp is None and spacy:
+        try:
+            nlp = spacy.load('en_core_web_sm')
+        except OSError:
+            print("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+            nlp = False  # Mark as failed to avoid retrying
+    return nlp if nlp is not False else None
 
 
 class ResumeParser:
