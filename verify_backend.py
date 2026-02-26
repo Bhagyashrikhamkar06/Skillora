@@ -56,7 +56,7 @@ def run_verification():
             "title": "Verification Engineer",
             "company_name": "Test Co",
             "description": "Testing the backend",
-            "required_skills": "Python, Testing"
+            "required_skills": ["Python", "Testing"]
         })
         if res.status_code == 201:
             job_id = res.json()['job']['id']

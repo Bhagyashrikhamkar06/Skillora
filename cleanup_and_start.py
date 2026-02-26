@@ -66,21 +66,28 @@ def check_health():
     print("\n🔍 Checking backend health...")
     time.sleep(2)
     try:
-        result = subprocess.run(
-            'curl http://localhost:5000/api/health',
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0:
-            print("✓ Backend is healthy!")
-            print(f"Response: {result.stdout}")
-        else:
-            print("✗ Backend health check failed")
-            print(f"Error: {result.stderr}")
-    except Exception as e:
-        print(f"✗ Health check error: {e}")
+        import requests
+        try:
+            response = requests.get('http://localhost:5000/api/health', timeout=5)
+            if response.status_code == 200:
+                print("✓ Backend is healthy!")
+                print(f"Response: {response.json()}")
+            else:
+                print(f"✗ Backend returned status code: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"✗ Backend health check failed: {e}")
+            
+    except ImportError:
+        # Fallback if requests is not installed (though it should be)
+        import urllib.request
+        try:
+            with urllib.request.urlopen('http://localhost:5000/api/health') as response:
+                if response.getcode() == 200:
+                    print("✓ Backend is healthy!")
+                else:
+                    print(f"✗ Backend returned status code: {response.getcode()}")
+        except Exception as e:
+            print(f"✗ Health check error: {e}")
 
 if __name__ == "__main__":
     print("=" * 60)

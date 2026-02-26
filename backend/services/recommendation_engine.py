@@ -1,9 +1,17 @@
 """
 Intelligent job recommendation engine using TF-IDF and cosine similarity
 """
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
 from datetime import datetime, timedelta
 from models.job import Job
 from models.resume import Resume, Skill
@@ -58,14 +66,26 @@ class RecommendationEngine:
         
         documents = [user_skills_text, job_skills_text]
         
-        # TF-IDF vectorization
-        vectorizer = TfidfVectorizer()
-        tfidf_matrix = vectorizer.fit_transform(documents)
-        
-        # Calculate cosine similarity
-        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-        
-        return similarity
+        if HAS_SKLEARN:
+            # TF-IDF vectorization
+            vectorizer = TfidfVectorizer()
+            try:
+                tfidf_matrix = vectorizer.fit_transform(documents)
+                # Calculate cosine similarity
+                similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+                return similarity
+            except ValueError:
+                return 0.0
+        else:
+            # Simple Jaccard similarity fallback
+            try:
+                user_set = set([s.lower() for s in user_skills])
+                job_set = set([s.lower() for s in job_skills])
+                intersection = len(user_set.intersection(job_set))
+                union = len(user_set.union(job_set))
+                return intersection / union if union > 0 else 0.0
+            except Exception:
+                return 0.0
     
     def calculate_experience_match(self, user_experience_months, job_exp_min, job_exp_max):
         """
